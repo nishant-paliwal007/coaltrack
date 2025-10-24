@@ -8,6 +8,9 @@ import Warehouse from "./components/Modules/Warehouse";
 import Transportation from "./components/Modules/Transportation";
 import Sales from "./components/Modules/Sales";
 import Finance from "./components/Modules/Finance";
+import UserManagement from "./components/Modules/UserManagement"; // ✅ ADD THIS IMPORT
+import { apiCall } from "./utils/api.js";
+import { API_ENDPOINTS } from "./config/constants.js";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -16,24 +19,42 @@ function App() {
 
   // Check if user is already logged in
   useEffect(() => {
-    const storedUser = localStorage.getItem("coalERP_user");
-    const token = localStorage.getItem("coalERP_token");
+    const checkAuth = async () => {
+      const token = localStorage.getItem("coalERP_token");
+      const storedUser = localStorage.getItem("coalERP_user");
 
-    if (storedUser && token) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
+      if (token && storedUser) {
+        try {
+          // Verify token with backend
+          const response = await apiCall(API_ENDPOINTS.PROFILE);
+          setUser(response.data);
+        } catch (error) {
+          // Token invalid, clear storage
+          localStorage.removeItem("coalERP_token");
+          localStorage.removeItem("coalERP_user");
+        }
+      }
+      setLoading(false);
+    };
+
+    checkAuth();
   }, []);
 
   const handleLogin = (userData) => {
     setUser(userData);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("coalERP_user");
-    localStorage.removeItem("coalERP_token");
-    setUser(null);
-    setCurrentModule("dashboard");
+  const handleLogout = async () => {
+    try {
+      await apiCall(API_ENDPOINTS.LOGOUT);
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      localStorage.removeItem("coalERP_token");
+      localStorage.removeItem("coalERP_user");
+      setUser(null);
+      setCurrentModule("dashboard");
+    }
   };
 
   const renderModule = () => {
@@ -50,6 +71,8 @@ function App() {
         return <Sales user={user} />;
       case "finance":
         return <Finance user={user} />;
+      case "users": // ✅ ADD THIS CASE
+        return <UserManagement user={user} />;
       default:
         return <Dashboard user={user} />;
     }

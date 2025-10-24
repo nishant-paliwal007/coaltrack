@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { TruckIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { apiCall } from '../../utils/api.js';
+import { API_ENDPOINTS } from '../../config/constants.js';
 
 const Login = ({ onLogin }) => {
   const [email, setEmail] = useState('');
@@ -9,52 +11,26 @@ const Login = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Hardcoded users for demo (Backend me proper database use karenge)
-  const demoUsers = [
-    { email: 'rajesh.kumar@coalcorp.com', password: 'password123', name: 'Rajesh Kumar', role: 'Admin' },
-    { email: 'priya.sharma@coalcorp.com', password: 'password123', name: 'Priya Sharma', role: 'Warehouse Manager' },
-    { email: 'amit.singh@coalcorp.com', password: 'password123', name: 'Amit Singh', role: 'Transport Manager' },
-    { email: 'neha.gupta@coalcorp.com', password: 'password123', name: 'Neha Gupta', role: 'Accounts' },
-    { email: 'vikram.patel@coalcorp.com', password: 'password123', name: 'Vikram Patel', role: 'Management' }
-  ];
-
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await apiCall(API_ENDPOINTS.LOGIN, {
+        method: 'POST',
+        body: { email, password }
+      });
       
-      // Find user in demo users
-      const user = demoUsers.find(u => u.email === email && u.password === password);
-      
-      if (user) {
-        // Remove password before storing
-        const { password: _, ...userWithoutPassword } = user;
-        
-        // Store in localStorage (temporary solution)
-        localStorage.setItem('coalERP_user', JSON.stringify(userWithoutPassword));
-        localStorage.setItem('coalERP_token', 'demo-token-' + Date.now());
-        
-        onLogin(userWithoutPassword);
-      } else {
-        setError('Invalid email or password');
+      if (response.success) {
+        localStorage.setItem('coalERP_token', response.data.token);
+        localStorage.setItem('coalERP_user', JSON.stringify(response.data.user));
+        onLogin(response.data.user);
       }
-    } catch (err) {
-      setError('Login failed. Please try again.');
+    } catch (error) {
+      setError(error.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Demo credentials fill handler
-  const fillDemoCredentials = (userType) => {
-    const user = demoUsers.find(u => u.role === userType);
-    if (user) {
-      setEmail(user.email);
-      setPassword(user.password);
     }
   };
 
@@ -149,29 +125,10 @@ const Login = ({ onLogin }) => {
           </motion.button>
         </form>
 
-        {/* Demo Credentials */}
-        <div className="mt-8">
-          <p className="text-center text-sm text-gray-600 mb-4">Demo Credentials:</p>
-          <div className="grid grid-cols-2 gap-2">
-            {['Admin', 'Warehouse Manager', 'Transport Manager', 'Accounts'].map((role) => (
-              <motion.button
-                key={role}
-                type="button"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => fillDemoCredentials(role)}
-                className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg transition-colors"
-              >
-                {role}
-              </motion.button>
-            ))}
-          </div>
-        </div>
-
         {/* Footer */}
         <div className="mt-8 text-center">
           <p className="text-xs text-gray-500">
-            For demo purposes only. Backend implementation will include proper password hashing.
+            Use your company email and password to login
           </p>
         </div>
       </motion.div>

@@ -1,33 +1,34 @@
-import React from "react";
-import { motion } from "framer-motion";
-import {
-  HomeIcon,
-  ShoppingCartIcon,
+import React from 'react';
+import { motion } from 'framer-motion';
+import { 
+  HomeIcon, 
+  ShoppingCartIcon, 
   BuildingStorefrontIcon,
   TruckIcon,
   CurrencyRupeeIcon,
   ChartBarIcon,
   CogIcon,
-  UsersIcon,
-} from "@heroicons/react/24/outline";
+  UsersIcon
+} from '@heroicons/react/24/outline';
 
-const Sidebar = ({
-  onClose,
-  onLogout,
-  user,
-  currentModule,
-  setCurrentModule,
-}) => {
-  const menuItems = [
-    { name: "Dashboard", icon: HomeIcon, module: "dashboard" },
-    { name: "Procurement", icon: ShoppingCartIcon, module: "procurement" },
-    { name: "Warehouse", icon: BuildingStorefrontIcon, module: "warehouse" },
-    { name: "Transportation", icon: TruckIcon, module: "transport" },
-    { name: "Sales", icon: CurrencyRupeeIcon, module: "sales" },
-    { name: "Finance", icon: ChartBarIcon, module: "finance" },
-    { name: "User Management", icon: UsersIcon, module: "users" },
-    { name: "Settings", icon: CogIcon, module: "settings" },
-  ];
+const Sidebar = ({ onClose, onLogout, user, currentModule, setCurrentModule }) => {
+  // Role-based menu items
+  const getMenuItems = (role) => {
+    const allItems = [
+      { name: 'Dashboard', icon: HomeIcon, module: 'dashboard', roles: ['Admin', 'Warehouse Manager', 'Transport Manager', 'Accounts', 'Management'] },
+      { name: 'Procurement', icon: ShoppingCartIcon, module: 'procurement', roles: ['Admin', 'Management'] },
+      { name: 'Warehouse', icon: BuildingStorefrontIcon, module: 'warehouse', roles: ['Admin', 'Warehouse Manager', 'Management'] },
+      { name: 'Transportation', icon: TruckIcon, module: 'transport', roles: ['Admin', 'Transport Manager', 'Management'] },
+      { name: 'Sales', icon: CurrencyRupeeIcon, module: 'sales', roles: ['Admin', 'Accounts', 'Management'] },
+      { name: 'Finance', icon: ChartBarIcon, module: 'finance', roles: ['Admin', 'Accounts', 'Management'] },
+      { name: 'User Management', icon: UsersIcon, module: 'users', roles: ['Admin'] },
+      { name: 'Settings', icon: CogIcon, module: 'settings', roles: ['Admin'] },
+    ];
+
+    return allItems.filter(item => item.roles.includes(role));
+  };
+
+  const menuItems = getMenuItems(user?.role);
 
   const handleModuleChange = (module) => {
     setCurrentModule(module);
@@ -38,7 +39,7 @@ const Sidebar = ({
     <div className="flex flex-col grow bg-linear-to-b from-gray-800 to-gray-900 text-white">
       {/* Logo */}
       <div className="flex items-center justify-between h-16 px-4 border-b border-gray-700">
-        <motion.div
+        <motion.div 
           className="flex items-center space-x-2"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -67,8 +68,8 @@ const Sidebar = ({
             onClick={() => handleModuleChange(item.module)}
             className={`flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
               currentModule === item.module
-                ? "bg-orange-500 text-white shadow-lg"
-                : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                ? 'bg-orange-500 text-white shadow-lg' 
+                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
             }`}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -83,7 +84,7 @@ const Sidebar = ({
       </nav>
 
       {/* User Profile */}
-      <motion.div
+      <motion.div 
         className="p-4 border-t border-gray-700"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -92,19 +93,24 @@ const Sidebar = ({
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
             <span className="font-semibold">
-              {user?.name
-                ?.split(" ")
-                .map((n) => n[0])
-                .join("")}
+              {user?.name?.split(' ').map(n => n[0]).join('')}
             </span>
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-white truncate">
               {user?.name}
             </p>
-            <p className="text-xs text-gray-400 truncate">{user?.role}</p>
+            <p className="text-xs text-gray-400 truncate">
+              {user?.role}
+            </p>
           </div>
         </div>
+        <button
+          onClick={onLogout}
+          className="w-full mt-3 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+        >
+          Sign Out
+        </button>
       </motion.div>
     </div>
   );

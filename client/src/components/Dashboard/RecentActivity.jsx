@@ -1,38 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-const RecentActivity = () => {
-  const activities = [
-    {
-      id: 1,
-      type: 'purchase',
-      description: 'New PO #PO/2024/001 created',
-      time: '2 hours ago',
-      status: 'completed'
-    },
-    {
-      id: 2,
-      type: 'delivery',
-      description: 'Coal delivery from Coal India',
-      time: '4 hours ago',
-      status: 'in-progress'
-    },
-    {
-      id: 3,
-      type: 'payment',
-      description: 'Payment received from Tata Power',
-      time: '1 day ago',
-      status: 'completed'
-    },
-    {
-      id: 4,
-      type: 'maintenance',
-      description: 'Vehicle MH12AB1234 maintenance due',
-      time: '2 days ago',
-      status: 'pending'
-    }
-  ];
-
+const RecentActivity = ({ activities }) => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'completed': return 'bg-green-100 text-green-800';
@@ -81,6 +50,9 @@ const RecentActivity = () => {
             </span>
           </motion.div>
         ))}
+        {activities.length === 0 && (
+          <p className="text-gray-500 text-center py-4">No recent activities</p>
+        )}
       </div>
     </motion.div>
   );
